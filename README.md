@@ -1,22 +1,37 @@
 
-# 📘 **Credit Card Fraud Detection — Machine Learning Project**
+---
+# 📘 **Credit Card Fraud Detection — End-to-End Machine Learning Pipeline**
 
-This project implements a complete **end-to-end Credit Card Fraud Detection system** using the well-known Kaggle dataset.
-It includes Exploratory Data Analysis (EDA), preprocessing, class imbalance handling, model training, evaluation, and a modular project structure suitable for scaling.
+This project implements a complete **fraud detection pipeline** using the Kaggle Credit Card Fraud dataset.
+It includes:
 
+✔ Modular pipeline design
+✔ Preprocessing + SMOTE
+✔ Multiple ML models (LR, Random Forest, XGBoost)
+✔ Training & evaluation CLI (`main.py`)
 ---
 
-## 🚀 **Project Overview**
+## 🚀 **Project Workflow**
 
-The goal is to build a machine learning pipeline that can classify whether a credit card transaction is **fraudulent** or **legitimate**, using supervised learning algorithms.
+The entire ML pipeline is built as a **Python package (`src/`)** and is operated through a single entry point:
 
-This project uses multiple baseline models:
+```
+python main.py --train
+python main.py --evaluate
+```
 
-* **Logistic Regression**
-* **Random Forest Classifier**
-* **XGBoost Classifier**
+### Pipeline Flow:
 
-Fraud datasets are highly imbalanced, so techniques like **SMOTE oversampling**, **scaling**, and **stratified splits** are used.
+1. **Load dataset**
+2. **Preprocess**
+
+   * Scaling
+   * Train/test split
+   * SMOTE oversampling
+3. **Train multiple models**
+4. **Save trained models**
+5. **Evaluate models on holdout test set**
+6. **Print full classification report + AUC**
 
 ---
 
@@ -25,26 +40,30 @@ Fraud datasets are highly imbalanced, so techniques like **SMOTE oversampling**,
 ```
 creditcard-fraud-detection/
 │
+├── main.py                   # pipeline entrypoint
+│
+├── src/                      # ML pipeline package
+│   ├── __init__.py
+│   ├── config.py             # data paths, model paths
+│   ├── data_loader.py        # load raw data
+│   ├── preprocessor.py       # scaling, split, SMOTE
+│   ├── models.py             # model definitions
+│   └── pipeline.py           # full ML workflow
+│
 ├── data/
-│   ├── raw/                # raw dataset (ignored by git)
-│   └── processed/          # processed data files
+│   ├── raw/                  # place creditcard.csv here
+│   └── processed/
 │
-├── models/                 # saved ML models (.joblib)
+├── models/                   # saved trained models
 │
-├── notebooks/
-│   ├── 1_EDA.ipynb         # exploratory data analysis
+├── notebooks/                # EDA, preprocessing, modeling
+│   ├── 1_EDA.ipynb
 │   ├── 2_Preprocessing.ipynb
 │   └── 3_Modeling.ipynb
 │
-├── src/
-│   ├── data_processing.py  # loading, scaling, SMOTE, splits
-│   ├── train.py            # trains baseline models
-│   └── evaluate.py         # evaluates saved models
+├── utils/                    # helper functions for notebooks
+│   └── plot_utils.py
 │
-├── utils/
-│   └── plot_utils.py       # custom plotting helpers
-│
-├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
@@ -53,22 +72,17 @@ creditcard-fraud-detection/
 
 ## 📊 **Dataset**
 
-We use the popular **Credit Card Fraud Detection Dataset** from Kaggle.
+We use the popular **Kaggle Credit Card Fraud Detection dataset**:
 
-* **Total Samples:** 284,807
-* **Fraud Cases:** 492
-* **Imbalance:** ~0.17% fraud
+* **Total transactions:** 284,807
+* **Fraud cases:** 492 (0.17%)
 * **Features:**
 
-  * Time, Amount
-  * Features `V1`–`V28` (PCA-transformed for confidentiality)
-  * Label: `Class` (1 = Fraud, 0 = Legit)
+  * `Time`, `Amount`
+  * PCA-transformed features `V1`–`V28`
+  * `Class` → 1 = Fraud, 0 = Legit
 
-### ⚠️ Dataset not included in this repo
-
-Due to Kaggle licensing and GitHub's 100 MB limit, the CSV is not included.
-
-**Download it manually from Kaggle**, then place it here:
+Place the dataset manually at:
 
 ```
 data/raw/creditcard.csv
@@ -78,101 +92,82 @@ data/raw/creditcard.csv
 
 ## 🔧 **Installation & Setup**
 
-### 1️⃣ Create environment (optional)
+### 1️⃣ Install dependencies
 
-```bash
-python -m venv venv
-venv\Scripts\activate   # Windows
 ```
-
-### 2️⃣ Install dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
-### 3️⃣ Prepare dataset
-
-Download from Kaggle → Move to:
+### 2️⃣ Place dataset
 
 ```
 data/raw/creditcard.csv
 ```
 
----
-
-## 🧪 **How to Run the Project**
-
-### 📘 **Run Notebooks**
-
-Open Jupyter and run:
-
-* `1_EDA.ipynb`
-* `2_Preprocessing.ipynb`
-* `3_Modeling.ipynb`
-
-### 🛠 **Train Baseline Models (Script Version)**
-
-```bash
-python src/train.py
-```
-
-### 📈 **Evaluate Models**
-
-```bash
-python src/evaluate.py
-```
-
-Models will be saved automatically to:
+### 3️⃣ Run training
 
 ```
-models/
+python main.py --train
+```
+
+### 4️⃣ Run evaluation
+
+```
+python main.py --evaluate
 ```
 
 ---
 
-## 📉 **Techniques Used**
+# 📈 **Model Performance**
 
-### 🔹 **Data Preprocessing**
+After training, here are the real evaluation results from this pipeline:
 
-* StandardScaler
-* SMOTE oversampling
-* Train/Test split with stratification
+### **Logistic Regression**
 
-### 🔹 **Models**
-
-* Logistic Regression
-* Random Forest
-* XGBoost
-
-### 🔹 **Evaluation Metrics**
-
-* Precision
-* Recall
-* F1-Score
-* ROC-AUC
-
-*Recall is especially important due to class imbalance (frauds are rare but critical).*
+* Precision (fraud): **0.06**
+* Recall (fraud): **0.92**
+* AUC: **0.97**
+  👉 High recall, very low precision (lots of false alarms)
 
 ---
 
-## 🔮 **Future Improvements**
+### **Random Forest**
 
-* Add SHAP interpretability
-* Add LightGBM / CatBoost
-* Build FastAPI inference API
-* Deploy on Render / HuggingFace Spaces
-* Hyperparameter optimization (Optuna)
-* Add MLflow tracking
-
----
-
-## 🤝 **Contributing**
-
-Feel free to open issues or submit pull requests to improve the project!
+* Precision (fraud): **0.86**
+* Recall (fraud): **0.83**
+* F1: **0.84**
+* AUC: **0.977**
+  👉 **Best overall model** — balanced precision & recall
 
 ---
 
-## 📜 **License**
+### **XGBoost**
 
-This project is open-source under the **MIT License**.
+* Precision (fraud): **0.30**
+* Recall (fraud): **0.86**
+* AUC: **0.977**
+  👉 Strong recall, but too many false positives compared to RF
+
+---
+
+## 🏆 **Best Model: Random Forest**
+
+Excellent precision–recall balance and high AUC.
+
+---
+
+# 🔮 **Future Improvements**
+
+✓ Add SHAP feature interpretability
+✓ Hyperparameter tuning (Optuna)
+✓ Use class weights instead of SMOTE
+✓ Build a real-time fraud detection API (FastAPI)
+✓ Add confusion matrix & ROC curve visualizations
+
+---
+
+# 🤝 **Contributions**
+
+Feel free to open issues or submit PRs!
+
+---
